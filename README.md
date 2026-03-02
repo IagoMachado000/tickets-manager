@@ -214,3 +214,82 @@ A API está preparada para:
 - Implementação futura de roles e permissões
 
 ---
+
+## Padronização de Respostas da API
+
+### Estrutura Geral das Respostas
+
+Todas as respostas da API seguem o mesmo formato JSON, independente do endpoint ou do tipo de resposta (sucesso ou erro).
+
+**Resposta de sucesso (`success`):**
+
+```json
+{
+  "success": true,
+  "message": "Mensagem opcional",
+  "data": {...},          // Conteúdo da resposta
+  "meta": {...}           // Informações adicionais opcionais, como paginação
+}
+```
+
+**Resposta de erro (`error`):**
+
+```json
+{
+  "success": false,
+  "message": "Descrição do erro",
+  "data": {...}           // Informações opcionais adicionais sobre o erro
+}
+```
+
+- `success`: indica se a requisição foi processada com sucesso.
+- `message`: mensagem descritiva para o usuário ou front-end.
+- `data`: payload com os dados solicitados ou informações de erro.
+- `meta` (opcional): informações adicionais, como paginação (`total`, `per_page`, `current_page`, etc).
+
+### Tratamento de Erros Globais
+
+As exceções e erros são tratados de forma centralizada em `bootstrap/app.php`, garantindo consistência na API.
+
+| Código HTTP   | Situação                                         | Exemplo de resposta                                                                                                        |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 422           | Erro de validação (`ValidationException`)        | `{"success": false, "message": "Erro de validação.", "data": {"campo": ["Mensagem de erro"]}}`                             |
+| 404           | Recurso não encontrado (`NotFoundHttpException`) | `{"success": false, "message": "Recurso não encontrado.", "data": null}`                                                   |
+| 403, 401, etc | Outras exceções HTTP (`HttpExceptionInterface`)  | `{"success": false, "message": "Mensagem da exceção ou 'Erro na requisição'.", "data": null}`                              |
+| 500           | Erro interno do servidor                         | `{"success": false, "message": "Erro interno do servidor.", "data": null}` (mostra mensagem detalhada se `APP_DEBUG=true`) |
+
+> Todas as respostas de erro incluem `success: false` e `data` como `null` ou com informações adicionais do erro.
+
+### Uso do Trait `ApiResponseTrait`
+
+Todos os controllers da API estendem `BaseApiController` e podem usar os métodos:
+
+- `success($data, $message = null, $status = 200, $meta = null)`
+- `error($message, $status = 400, $data = null)`
+
+**Exemplo:**
+
+```php
+public function show(Project $project)
+{
+    return $this->success($project, "Projeto encontrado com sucesso");
+}
+
+public function destroy(Project $project)
+{
+    try {
+        $project->delete();
+        return $this->success(null, "Projeto deletado com sucesso");
+    } catch (\Exception $e) {
+        return $this->error("Não foi possível deletar o projeto", 500);
+    }
+}
+```
+
+### Justificativa Técnica
+
+- **Consistência:** Todas as respostas têm o mesmo formato, facilitando o consumo por front-end ou mobile.
+- **Separação de responsabilidades:** Controllers apenas chamam `success()` ou `error()`, enquanto o `bootstrap/app.php` cuida do tratamento global de exceções.
+- **Facilidade de extensão:** Meta dados e mensagens adicionais podem ser facilmente adicionadas sem quebrar o padrão.
+
+---
