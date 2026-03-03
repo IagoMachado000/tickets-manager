@@ -43,4 +43,9 @@ class Project extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->where('name', 'like', "%{$search}%");
+    }
 }

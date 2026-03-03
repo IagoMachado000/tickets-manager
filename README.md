@@ -72,13 +72,6 @@ A definição do locale e timezone no início do projeto garante:
 
 ---
 
-Excelente 👏
-Sua documentação já está **muito acima da média** para teste técnico.
-
-Agora vamos organizar isso de forma estratégica.
-
----
-
 ## Autenticação
 
 ### Visão Geral
@@ -317,4 +310,93 @@ public function destroy(Project $project)
 
 ---
 
-##
+## CRUD Projects
+
+### List
+
+#### Endpoint
+
+```http
+GET /api/projects
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Lista os projetos disponíveis de acordo com o perfil do usuário autenticado.
+
+##### Regras de acesso:
+
+- **user**
+    - Retorna apenas o projeto associado ao usuário.
+
+- **support**
+    - Retorna todos os projetos cadastrados.
+
+##### Filtros disponíveis
+
+| Parâmetro | Tipo   | Descrição                                |
+| --------- | ------ | ---------------------------------------- |
+| `q`       | string | Filtra projetos pelo nome (LIKE %texto%) |
+
+Exemplo:
+
+```http
+GET /api/projects?q=sistema
+```
+
+#### Paginação
+
+A listagem é paginada com 10 registros por página.
+
+Metadados retornados:
+
+- total
+- per_page
+- current_page
+- last_page
+- from
+- to
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projetos listados com sucesso.",
+    "data": [
+        {
+            "id": 1,
+            "name": "Sistema Interno",
+            "description": "Projeto principal da empresa",
+            "created_at": "2026-03-03 10:30:00"
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "total": 1,
+            "per_page": 10,
+            "current_page": 1,
+            "last_page": 1,
+            "from": 1,
+            "to": 1
+        }
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição               |
+| ------ | ----------------------- |
+| 401    | Não autenticado         |
+| 403    | Sem permissão de acesso |
