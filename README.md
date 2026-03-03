@@ -400,3 +400,72 @@ Metadados retornados:
 | ------ | ----------------------- |
 | 401    | Não autenticado         |
 | 403    | Sem permissão de acesso |
+
+### Show Project
+
+#### Endpoint
+
+```http
+GET /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Retorna os dados de um projeto específico.
+
+##### Regras de acesso
+
+- **user**
+    - Pode visualizar apenas o projeto ao qual está vinculado.
+    - Caso tente acessar outro projeto, receberá **403 - Acesso negado**.
+
+- **support**
+    - Pode visualizar qualquer projeto cadastrado no sistema.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Exemplo de requisição
+
+```http
+GET /api/projects/3
+Authorization: Bearer {token}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto recuperado com sucesso.",
+    "data": {
+        "id": 3,
+        "name": "Pereira S.A.",
+        "description": null,
+        "created_at": "2026-03-03 12:00:53"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                    |
+| ------ | -------------------------------------------- |
+| 401    | Usuário não autenticado                      |
+| 403    | Usuário sem permissão para acessar o projeto |
+| 404    | Projeto não encontrado                       |
+
+#### Implementação técnica
+
+- Como é usado Route Model Binding para recuperação do projeto, o Laravel automaticamente retorna `404 Not Found` caso o ID não exista.

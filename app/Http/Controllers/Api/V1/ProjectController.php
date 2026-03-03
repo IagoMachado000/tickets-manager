@@ -50,9 +50,15 @@ class ProjectController extends BaseApiController
     /**
      * Display the specified resource.
      */
-    public function show(Project $project)
+    public function show(Project $project, Request $request)
     {
-        //
+        $project = $this->projectService->show($project, $request->user());
+
+        return $this->success(
+            new ProjectResource($project),
+            'Projeto recuperado com sucesso.',
+            200
+        );
     }
 
     /**

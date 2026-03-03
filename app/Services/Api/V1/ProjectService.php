@@ -22,4 +22,13 @@ class ProjectService
 
         return $query->paginate(10);
     }
+
+    public function show(Project $project, User $user)
+    {
+        if ($user->role === 'user' && $user->project_id !== $project->id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        return $project;
+    }
 }
