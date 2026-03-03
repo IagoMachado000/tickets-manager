@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Requests\Api\V1\StoreProjectRequest;
 use App\Http\Resources\Api\V1\ProjectResource;
 use App\Models\Project;
 use App\Services\Api\V1\ProjectService;
@@ -42,9 +43,15 @@ class ProjectController extends BaseApiController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        //
+        $project = $this->projectService->create($request->validated(), $request->user());
+
+        return $this->success(
+            new ProjectResource($project),
+            'Projeto criado com sucesso.',
+            201
+        );
     }
 
     /**

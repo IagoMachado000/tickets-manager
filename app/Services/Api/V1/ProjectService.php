@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Api\V1;
 
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProjectService
 {
@@ -23,7 +26,21 @@ class ProjectService
         return $query->paginate(10);
     }
 
-    public function show(Project $project, User $user)
+    public function create(array $data, User $user): Project
+    {
+        if ($user->role !== 'support') {
+            abort(403, 'Acesso negado.');
+        }
+
+        return DB::transaction(function () use ($data) {
+            return Project::create([
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+            ]);
+        });
+    }
+
+    public function show(Project $project, User $user): Project
     {
         if ($user->role === 'user' && $user->project_id !== $project->id) {
             abort(403, 'Acesso negado.');

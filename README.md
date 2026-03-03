@@ -468,4 +468,102 @@ Authorization: Bearer {token}
 
 #### Implementação técnica
 
-- Como é usado Route Model Binding para recuperação do projeto, o Laravel automaticamente retorna `404 Not Found` caso o ID não exista.
+### Create Project
+
+#### Endpoint
+
+```http
+POST /api/projects
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Cria um novo projeto no sistema.
+
+#### Regras de acesso
+
+- **support**
+    - Pode criar novos projetos.
+
+- **user**
+    - Não possui permissão para criar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Corpo da requisição (JSON)
+
+| Campo         | Tipo   | Obrigatório | Descrição                                    |
+| ------------- | ------ | ----------- | -------------------------------------------- |
+| `name`        | string | Sim         | Nome do projeto (máx. 255 caracteres, único) |
+| `description` | string | Não         | Descrição do projeto                         |
+
+#### Regras de validação
+
+- `name`
+    - obrigatório
+    - string
+    - máximo 255 caracteres
+    - único na tabela `projects`
+    - espaços extras são removidos automaticamente
+
+- `description`
+    - opcional
+    - string
+    - espaços extras são removidos automaticamente
+
+#### Exemplo de requisição
+
+```http
+POST /api/projects
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+```json
+{
+    "name": "Sistema Financeiro",
+    "description": "Projeto responsável pelo módulo financeiro"
+}
+```
+
+#### Exemplo de resposta (201 Created)
+
+```json
+{
+    "success": true,
+    "message": "Projeto criado com sucesso.",
+    "data": {
+        "id": 4,
+        "name": "Sistema Financeiro",
+        "description": "Projeto responsável pelo módulo financeiro",
+        "created_at": "2026-03-03 14:25:10"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                 |
+| ------ | ----------------------------------------- |
+| 401    | Usuário não autenticado                   |
+| 403    | Usuário sem permissão para criar projetos |
+| 422    | Erro de validação                         |
+
+#### Exemplo de erro de validação (422)
+
+```json
+{
+    "success": false,
+    "message": "Erro de validação.",
+    "data": {
+        "name": ["O campo nome já está sendo utilizado."]
+    }
+}
+```
