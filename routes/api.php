@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -9,5 +10,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/register', 'register')->name('api.v1.register');
         Route::post('/login', 'login')->name('api.v1.login');
         Route::post('/logout', 'logout')->name('api.v1.logout')->middleware('auth:sanctum');
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+        // Rotas protegidas para projetos
+        Route::apiResource('projects', ProjectController::class);
     });
 });

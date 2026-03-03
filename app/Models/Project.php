@@ -43,4 +43,20 @@ class Project extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->where('name', 'like', "%{$search}%");
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($project) {
+            if ($project->isForceDeleting()) {
+                $project->tickets()->forceDelete();
+            } else {
+                $project->tickets()->delete();
+            }
+        });
+    }
 }

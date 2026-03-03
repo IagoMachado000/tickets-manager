@@ -72,13 +72,6 @@ A definição do locale e timezone no início do projeto garante:
 
 ---
 
-Excelente 👏
-Sua documentação já está **muito acima da média** para teste técnico.
-
-Agora vamos organizar isso de forma estratégica.
-
----
-
 ## Autenticação
 
 ### Visão Geral
@@ -317,4 +310,449 @@ public function destroy(Project $project)
 
 ---
 
-##
+## CRUD Projects
+
+### List
+
+#### Endpoint
+
+```http
+GET /api/projects
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Lista os projetos disponíveis de acordo com o perfil do usuário autenticado.
+
+##### Regras de acesso:
+
+- **user**
+    - Retorna apenas o projeto associado ao usuário.
+
+- **support**
+    - Retorna todos os projetos cadastrados.
+
+##### Filtros disponíveis
+
+| Parâmetro | Tipo   | Descrição                                |
+| --------- | ------ | ---------------------------------------- |
+| `q`       | string | Filtra projetos pelo nome (LIKE %texto%) |
+
+Exemplo:
+
+```http
+GET /api/projects?q=sistema
+```
+
+#### Paginação
+
+A listagem é paginada com 10 registros por página.
+
+Metadados retornados:
+
+- total
+- per_page
+- current_page
+- last_page
+- from
+- to
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projetos listados com sucesso.",
+    "data": [
+        {
+            "id": 1,
+            "name": "Sistema Interno",
+            "description": "Projeto principal da empresa",
+            "created_at": "2026-03-03 10:30:00"
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "total": 1,
+            "per_page": 10,
+            "current_page": 1,
+            "last_page": 1,
+            "from": 1,
+            "to": 1
+        }
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição               |
+| ------ | ----------------------- |
+| 401    | Não autenticado         |
+| 403    | Sem permissão de acesso |
+
+### Show Project
+
+#### Endpoint
+
+```http
+GET /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Retorna os dados de um projeto específico.
+
+##### Regras de acesso
+
+- **user**
+    - Pode visualizar apenas o projeto ao qual está vinculado.
+    - Caso tente acessar outro projeto, receberá **403 - Acesso negado**.
+
+- **support**
+    - Pode visualizar qualquer projeto cadastrado no sistema.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Exemplo de requisição
+
+```http
+GET /api/projects/3
+Authorization: Bearer {token}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto recuperado com sucesso.",
+    "data": {
+        "id": 3,
+        "name": "Pereira S.A.",
+        "description": null,
+        "created_at": "2026-03-03 12:00:53"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                    |
+| ------ | -------------------------------------------- |
+| 401    | Usuário não autenticado                      |
+| 403    | Usuário sem permissão para acessar o projeto |
+| 404    | Projeto não encontrado                       |
+
+#### Implementação técnica
+
+### Create Project
+
+#### Endpoint
+
+```http
+POST /api/projects
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Cria um novo projeto no sistema.
+
+#### Regras de acesso
+
+- **support**
+    - Pode criar novos projetos.
+
+- **user**
+    - Não possui permissão para criar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Corpo da requisição (JSON)
+
+| Campo         | Tipo   | Obrigatório | Descrição                                    |
+| ------------- | ------ | ----------- | -------------------------------------------- |
+| `name`        | string | Sim         | Nome do projeto (máx. 255 caracteres, único) |
+| `description` | string | Não         | Descrição do projeto                         |
+
+#### Regras de validação
+
+- `name`
+    - obrigatório
+    - string
+    - máximo 255 caracteres
+    - único na tabela `projects`
+    - espaços extras são removidos automaticamente
+
+- `description`
+    - opcional
+    - string
+    - espaços extras são removidos automaticamente
+
+#### Exemplo de requisição
+
+```http
+POST /api/projects
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+```json
+{
+    "name": "Sistema Financeiro",
+    "description": "Projeto responsável pelo módulo financeiro"
+}
+```
+
+#### Exemplo de resposta (201 Created)
+
+```json
+{
+    "success": true,
+    "message": "Projeto criado com sucesso.",
+    "data": {
+        "id": 4,
+        "name": "Sistema Financeiro",
+        "description": "Projeto responsável pelo módulo financeiro",
+        "created_at": "2026-03-03 14:25:10"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                 |
+| ------ | ----------------------------------------- |
+| 401    | Usuário não autenticado                   |
+| 403    | Usuário sem permissão para criar projetos |
+| 422    | Erro de validação                         |
+
+#### Exemplo de erro de validação (422)
+
+```json
+{
+    "success": false,
+    "message": "Erro de validação.",
+    "data": {
+        "name": ["O campo nome já está sendo utilizado."]
+    }
+}
+```
+
+### Update Project
+
+#### Endpoint
+
+```http
+PATCH /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Atualiza os dados de um projeto existente.
+
+A atualização é **parcial (PATCH)**, ou seja, apenas os campos enviados na requisição serão alterados.
+
+#### Regras de acesso
+
+- **support**
+    - Pode atualizar qualquer projeto.
+
+- **user**
+    - Não possui permissão para atualizar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Corpo da requisição (JSON)
+
+| Campo         | Tipo   | Obrigatório | Descrição                                    |
+| ------------- | ------ | ----------- | -------------------------------------------- |
+| `name`        | string | Não         | Nome do projeto (máx. 255 caracteres, único) |
+| `description` | string | Não         | Descrição do projeto                         |
+
+#### Regras de validação
+
+##### `name`
+
+- Opcional (`sometimes`)
+- Se enviado:
+    - Obrigatório
+    - String
+    - Máx. 255 caracteres
+    - Único na tabela `projects`
+    - Ignora o próprio registro na verificação de unicidade
+    - Espaços extras são removidos automaticamente
+
+##### `description`
+
+- Opcional (`sometimes`)
+- Pode ser `null`
+- Deve ser string quando informado
+- Espaços extras são removidos automaticamente
+
+#### Exemplo de requisição
+
+```http
+PATCH /api/projects/4
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+```json
+{
+    "name": "Sistema Financeiro Atualizado",
+    "description": "Nova descrição do projeto"
+}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto atualizado com sucesso.",
+    "data": {
+        "id": 4,
+        "name": "Sistema Financeiro Atualizado",
+        "description": "Nova descrição do projeto",
+        "created_at": "2026-03-03 14:25:10"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                     |
+| ------ | --------------------------------------------- |
+| 401    | Usuário não autenticado                       |
+| 403    | Usuário sem permissão para atualizar projetos |
+| 404    | Projeto não encontrado                        |
+| 422    | Erro de validação                             |
+
+#### Exemplo de erro de validação (422)
+
+```json
+{
+    "success": false,
+    "message": "Erro de validação.",
+    "data": {
+        "name": ["O campo nome já está sendo utilizado."]
+    }
+}
+```
+
+#### Implementação técnica
+
+- Regra de unicidade com `Rule::unique()->ignore()` para evitar conflito no próprio registro.
+
+### Delete Project
+
+#### Endpoint
+
+```http
+DELETE /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Exclui um projeto existente.
+A deleção segue a estratégia definida no sistema:
+
+- Soft delete para projetos e tickets relacionados.
+- Caso seja uma deleção forçada (`forceDelete`), tickets associados também serão removidos permanentemente.
+
+#### Regras de acesso
+
+- **support**
+    - Pode deletar qualquer projeto.
+
+- **user**
+    - Não possui permissão para deletar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Exemplo de requisição
+
+```http
+DELETE /api/projects/4
+Authorization: Bearer {token}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto deletado com sucesso.",
+    "data": null
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                   |
+| ------ | ------------------------------------------- |
+| 401    | Usuário não autenticado                     |
+| 403    | Usuário sem permissão para deletar projetos |
+| 404    | Projeto não encontrado                      |
+
+#### Implementação técnica
+
+- Eventos de deleção (`deleting`) no model `Project` cuidam da remoção de tickets associados:
+    - Se `forceDelete`: tickets são removidos permanentemente.
+    - Caso contrário: tickets recebem soft delete.
