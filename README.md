@@ -756,3 +756,107 @@ Authorization: Bearer {token}
 - Eventos de deleção (`deleting`) no model `Project` cuidam da remoção de tickets associados:
     - Se `forceDelete`: tickets são removidos permanentemente.
     - Caso contrário: tickets recebem soft delete.
+
+---
+
+## CRUD Tickets
+
+### List Tickets
+
+#### Endpoint
+
+```http
+GET /api/projects/{id}/tickets
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Lista os tickets de um projeto específico de acordo com o perfil do usuário autenticado.
+
+##### Regras de acesso
+
+- **user**
+    - Retorna apenas os tickets que ele criou dentro do projeto que pertence.
+    - Se tentar acessar um projeto que não pertence, retorna **403 Acesso negado**.
+
+- **support**
+    - Retorna todos os tickets do projeto.
+
+#### Paginação
+
+A listagem é paginada com 10 registros por página.
+
+Metadados retornados:
+
+- total
+- per_page
+- current_page
+- last_page
+- from
+- to
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Tickets listados com sucesso.",
+    "data": {
+        "tickets": [
+            {
+                "id": 1,
+                "user_id": 1,
+                "project_id": 1,
+                "title": "Sed facere animi ab.",
+                "description": "Qui assumenda at officiis ad...",
+                "status": "in_progress",
+                "last_internal_at": null,
+                "closed_at": null,
+                "created_at": "2026-03-03 12:00:53",
+                "updated_at": "2026-03-03 12:00:53",
+                "user": {
+                    "id": 1,
+                    "name": "Sr. Ronaldo Camacho Filho",
+                    "email": "diana.mendes@example.org",
+                    "role": "user",
+                    "project_id": 1
+                }
+            }
+        ],
+        "project": {
+            "id": 1,
+            "name": "Marin e Bittencourt",
+            "description": null,
+            "created_at": "2026-03-03 12:00:53"
+        }
+    },
+    "meta": {
+        "pagination": {
+            "total": 10,
+            "per_page": 10,
+            "current_page": 1,
+            "last_page": 1,
+            "from": 1,
+            "to": 10
+        }
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Recurso não encontrado |
