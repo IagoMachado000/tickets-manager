@@ -39,14 +39,15 @@ Cada projeto possui usuários e tickets vinculados.
 ### Descrição
 
 Usuários autenticados via Sanctum.
-Cada usuário pertence a um único projeto.
+Usuários do tipo `user` devem obrigatoriamente estar vinculados a um projeto.
+Usuários do tipo `support` não possuem vínculo direto com projeto e podem atuar em tickets de qualquer projeto.
 
 ### Campos
 
 | Campo      | Tipo                   | Obrigatório | Descrição                |
 | ---------- | ---------------------- | ----------- | ------------------------ |
 | id         | bigint (PK)            | ✔           | Identificador            |
-| project_id | bigint (FK)            | ✔           | Projeto ao qual pertence |
+| project_id | bigint (FK)            | ✖           | Projeto ao qual pertence |
 | name       | varchar(255)           | ✔           | Nome do usuário          |
 | email      | varchar(255)           | ✔           | Login (único)            |
 | password   | varchar(255)           | ✔           | Senha criptografada      |
@@ -218,8 +219,10 @@ Estrutura simplificada:
 
 ```
 projects
- ├── users
  └── tickets
-       ├── ticket_messages
-       │      └── ticket_attachments
+        └── ticket_messages
+              └── ticket_attachments
+
+users
+   └── project_id (nullable)
 ```
