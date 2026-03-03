@@ -48,4 +48,20 @@ class ProjectService
 
         return $project;
     }
+
+    public function update(Project $project, array $data, User $user): Project
+    {
+        if ($user->role !== 'support') {
+            abort(403, 'Acesso negado.');
+        }
+
+        return DB::transaction(function () use ($project, $data) {
+            $project->update([
+                'name' => $data['name'] ?? $project->name,
+                'description' => $data['description'] ?? null,
+            ]);
+
+            return $project;
+        });
+    }
 }

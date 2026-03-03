@@ -567,3 +567,122 @@ Content-Type: application/json
     }
 }
 ```
+
+### Update Project
+
+#### Endpoint
+
+```http
+PATCH /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Atualiza os dados de um projeto existente.
+
+A atualização é **parcial (PATCH)**, ou seja, apenas os campos enviados na requisição serão alterados.
+
+#### Regras de acesso
+
+- **support**
+    - Pode atualizar qualquer projeto.
+
+- **user**
+    - Não possui permissão para atualizar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Corpo da requisição (JSON)
+
+| Campo         | Tipo   | Obrigatório | Descrição                                    |
+| ------------- | ------ | ----------- | -------------------------------------------- |
+| `name`        | string | Não         | Nome do projeto (máx. 255 caracteres, único) |
+| `description` | string | Não         | Descrição do projeto                         |
+
+#### Regras de validação
+
+##### `name`
+
+- Opcional (`sometimes`)
+- Se enviado:
+    - Obrigatório
+    - String
+    - Máx. 255 caracteres
+    - Único na tabela `projects`
+    - Ignora o próprio registro na verificação de unicidade
+    - Espaços extras são removidos automaticamente
+
+##### `description`
+
+- Opcional (`sometimes`)
+- Pode ser `null`
+- Deve ser string quando informado
+- Espaços extras são removidos automaticamente
+
+#### Exemplo de requisição
+
+```http
+PATCH /api/projects/4
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+```json
+{
+    "name": "Sistema Financeiro Atualizado",
+    "description": "Nova descrição do projeto"
+}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto atualizado com sucesso.",
+    "data": {
+        "id": 4,
+        "name": "Sistema Financeiro Atualizado",
+        "description": "Nova descrição do projeto",
+        "created_at": "2026-03-03 14:25:10"
+    }
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                     |
+| ------ | --------------------------------------------- |
+| 401    | Usuário não autenticado                       |
+| 403    | Usuário sem permissão para atualizar projetos |
+| 404    | Projeto não encontrado                        |
+| 422    | Erro de validação                             |
+
+#### Exemplo de erro de validação (422)
+
+```json
+{
+    "success": false,
+    "message": "Erro de validação.",
+    "data": {
+        "name": ["O campo nome já está sendo utilizado."]
+    }
+}
+```
+
+#### Implementação técnica
+
+- Regra de unicidade com `Rule::unique()->ignore()` para evitar conflito no próprio registro.

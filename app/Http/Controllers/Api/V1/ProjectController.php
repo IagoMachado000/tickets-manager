@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\StoreProjectRequest;
+use App\Http\Requests\Api\V1\UpdateProjectRequest;
 use App\Http\Resources\Api\V1\ProjectResource;
 use App\Models\Project;
 use App\Services\Api\V1\ProjectService;
@@ -71,9 +72,15 @@ class ProjectController extends BaseApiController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Project $project)
+    public function update(UpdateProjectRequest $request, Project $project)
     {
-        //
+        $project = $this->projectService->update($project, $request->validated(), $request->user());
+
+        return $this->success(
+            new ProjectResource($project),
+            'Projeto atualizado com sucesso.',
+            200
+        );
     }
 
     /**
