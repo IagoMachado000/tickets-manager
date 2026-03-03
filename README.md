@@ -72,54 +72,128 @@ A definição do locale e timezone no início do projeto garante:
 
 ---
 
+Excelente 👏
+Sua documentação já está **muito acima da média** para teste técnico.
+
+Agora vamos organizar isso de forma estratégica.
+
+---
+
 ## Autenticação
 
 ### Visão Geral
 
-A API utiliza **Laravel Sanctum** para autenticação baseada em **Bearer Token**, garantindo que a aplicação seja stateless e adequada para consumo via ferramentas como Insomnia, Postman ou front-end (Blade ou SPA) consumindo a API via Bearer Token.
+A API utiliza **Laravel Sanctum** com autenticação baseada em **Bearer Token**, operando de forma stateless.
 
-A instalação foi realizada utilizando o comando oficial do Laravel:
+Foi utilizado o comando oficial:
 
 ```bash
 php artisan install:api
 ```
 
-### Funcionamento da Autenticação
+Os tokens são armazenados na tabela:
 
-A autenticação ocorre através de tokens pessoais armazenados na tabela:
-
-```text
+```
 personal_access_tokens
 ```
 
-Após o login, o usuário recebe um token que deve ser enviado no header das requisições protegidas.
+### Estratégia de Token
 
-### Fluxo de Autenticação
+A autenticação segue o modelo:
 
-#### O usuário realiza login:
+- Token é gerado no **register**
+- Token é gerado no **login**
+- O logout invalida apenas o token atual
+- Múltiplas sessões simultâneas são permitidas
+
+### Endpoints de Autenticação
+
+#### Register
+
+```http
+POST /api/v1/register
+```
+
+Cria um novo usuário e retorna token de acesso.
+
+##### Request
+
+```json
+{
+    "name": "João",
+    "email": "joao@email.com",
+    "password": "12345678",
+    "password_confirmation": "12345678",
+    "role": "user",
+    "project_id": 1
+}
+```
+
+##### Response (201)
+
+```json
+{
+  "success": true,
+  "message": "Usuário cadastrado com sucesso.",
+  "data": {
+    "user": { ... },
+    "token": "1|xxxxxxxx"
+  }
+}
+```
+
+#### Login
 
 ```http
 POST /api/v1/login
 ```
 
-#### A API retorna:
+Autentica o usuário e retorna um novo token.
+
+##### Request
 
 ```json
 {
-    "token": "1|xxxxxxxxxxxxxxxxxxxx",
-    "token_type": "Bearer"
+    "email": "joao@email.com",
+    "password": "12345678"
 }
 ```
 
-#### O token deve ser enviado nas próximas requisições no header:
+##### Response
+
+```json
+{
+  "success": true,
+  "message": "Login realizado com sucesso.",
+  "data": {
+    "user": { ... },
+    "token": "2|xxxxxxxx"
+  }
+}
+```
+
+#### Logout
 
 ```http
+POST /api/v1/logout
 Authorization: Bearer {token}
+```
+
+Invalida apenas o token atual.
+
+##### Response
+
+```json
+{
+    "success": true,
+    "message": "Logout realizado com sucesso.",
+    "data": null
+}
 ```
 
 ### Proteção de Rotas
 
-Rotas protegidas utilizam o middleware:
+Rotas protegidas utilizam:
 
 ```php
 auth:sanctum
@@ -128,90 +202,39 @@ auth:sanctum
 Exemplo:
 
 ```php
-Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', fn (Request $request) => $request->user());
 });
 ```
 
-### Teste de Funcionamento
+### Tratamento de Erros
 
-O funcionamento do Sanctum foi validado através de:
+A API possui padronização global de exceções:
 
-1.  Criação manual de usuário via Tinker
+- 401 → Não autenticado
+- 422 → Erro de validação
+- 404 → Recurso não encontrado
+- 500 → Erro interno
 
-    ```php
-    php artisan tinker
-
-    // criando usuário
-    use App\Models\User;
-    use Illuminate\Support\Facades\Hash;
-
-    User::create([
-        'name' => 'Teste',
-        'email' => 'teste@email.com',
-        'password' => Hash::make('123456')
-    ]);
-
-    exit
-    ```
-
-2.  Geração de token utilizando:
-
-    ```php
-    php artisan tinker
-
-    $user = User::where('email', 'teste@email.com')->first();
-    $user->createToken('teste-token')->plainTextToken;
-    $token;
-
-    // ex de saída
-    1|asdhjaskdhjaskdhjkasdhjkasdh // o token foi copiado
-    ```
-
-3.  Requisição autenticada via Insomnia enviando:
-
-    ```http
-    Authorization: Bearer {token}
-    ```
-
-4.  Rota protegida para teste
-    ```php
-    Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-        return $request->user();
-    });
-    ```
-
-A resposta esperada foi o objeto do usuário autenticado, confirmando:
+Exemplo 401:
 
 ```json
 {
-    "id": 1,
-    "name": "Teste",
-    "email": "teste@email.com",
-    "email_verified_at": null,
-    "created_at": "2026-03-02T18:26:57.000000Z",
-    "updated_at": "2026-03-02T18:26:57.000000Z"
+    "success": false,
+    "message": "Não autenticado.",
+    "data": null
 }
 ```
 
-- Middleware funcionando
-- Token válido
-- Associação correta com usuário
-- Configuração correta do Sanctum
+### Decisões Técnicas
 
-### Decisão Técnica
-
-Foi utilizado o Sanctum via `install:api`, seguindo a configuração oficial do Laravel 12.
-Não foi necessário adicionar manualmente um guard `api`, pois o middleware `auth:sanctum` já resolve a autenticação por token de forma nativa nas versões mais recentes da framework.
-
-### Resultado
-
-A API está preparada para:
-
-- Autenticação stateless
-- Versionamento (`/api/v1`)
-- Controle de acesso por usuário
-- Implementação futura de roles e permissões
+- Utilização do Sanctum via `install:api`
+- API totalmente stateless
+- Middleware `auth:sanctum` para proteção
+- Invalidação apenas do token atual no logout
+- Múltiplas sessões simultâneas permitidas
+- Padronização global de respostas e exceções
+- Bloqueio de campos extras no payload (validação estrita)
 
 ---
 
@@ -293,3 +316,5 @@ public function destroy(Project $project)
 - **Facilidade de extensão:** Meta dados e mensagens adicionais podem ser facilmente adicionadas sem quebrar o padrão.
 
 ---
+
+##
