@@ -64,4 +64,15 @@ class ProjectService
             return $project;
         });
     }
+
+    public function delete(Project $project, User $user): void
+    {
+        if ($user->role !== 'support') {
+            abort(403, 'Acesso negado.');
+        }
+
+        DB::transaction(function () use ($project) {
+            $project->delete();
+        });
+    }
 }

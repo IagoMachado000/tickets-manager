@@ -48,4 +48,15 @@ class Project extends Model
     {
         return $query->where('name', 'like', "%{$search}%");
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($project) {
+            if ($project->isForceDeleting()) {
+                $project->tickets()->forceDelete();
+            } else {
+                $project->tickets()->delete();
+            }
+        });
+    }
 }

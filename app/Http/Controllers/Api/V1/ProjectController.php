@@ -88,6 +88,12 @@ class ProjectController extends BaseApiController
      */
     public function destroy(Project $project)
     {
-        //
+        $this->projectService->delete($project, request()->user());
+
+        return $this->success(
+            null,
+            'Projeto deletado com sucesso.',
+            200
+        );
     }
 }

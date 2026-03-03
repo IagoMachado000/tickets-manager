@@ -686,3 +686,73 @@ Content-Type: application/json
 #### Implementação técnica
 
 - Regra de unicidade com `Rule::unique()->ignore()` para evitar conflito no próprio registro.
+
+### Delete Project
+
+#### Endpoint
+
+```http
+DELETE /api/projects/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Exclui um projeto existente.
+A deleção segue a estratégia definida no sistema:
+
+- Soft delete para projetos e tickets relacionados.
+- Caso seja uma deleção forçada (`forceDelete`), tickets associados também serão removidos permanentemente.
+
+#### Regras de acesso
+
+- **support**
+    - Pode deletar qualquer projeto.
+
+- **user**
+    - Não possui permissão para deletar projetos.
+    - Receberá **403 - Acesso negado** caso tente realizar a operação.
+
+#### Parâmetros de rota
+
+| Parâmetro | Tipo    | Obrigatório | Descrição     |
+| --------- | ------- | ----------- | ------------- |
+| `id`      | integer | Sim         | ID do projeto |
+
+#### Exemplo de requisição
+
+```http
+DELETE /api/projects/4
+Authorization: Bearer {token}
+```
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Projeto deletado com sucesso.",
+    "data": null
+}
+```
+
+#### Possíveis respostas de erro
+
+| Código | Descrição                                   |
+| ------ | ------------------------------------------- |
+| 401    | Usuário não autenticado                     |
+| 403    | Usuário sem permissão para deletar projetos |
+| 404    | Projeto não encontrado                      |
+
+#### Implementação técnica
+
+- Eventos de deleção (`deleting`) no model `Project` cuidam da remoção de tickets associados:
+    - Se `forceDelete`: tickets são removidos permanentemente.
+    - Caso contrário: tickets recebem soft delete.
