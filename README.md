@@ -312,7 +312,7 @@ public function destroy(Project $project)
 
 ## CRUD Projects
 
-### List
+### List Projects
 
 #### Endpoint
 
@@ -465,8 +465,6 @@ Authorization: Bearer {token}
 | 401    | Usuário não autenticado                      |
 | 403    | Usuário sem permissão para acessar o projeto |
 | 404    | Projeto não encontrado                       |
-
-#### Implementação técnica
 
 ### Create Project
 
@@ -756,3 +754,470 @@ Authorization: Bearer {token}
 - Eventos de deleção (`deleting`) no model `Project` cuidam da remoção de tickets associados:
     - Se `forceDelete`: tickets são removidos permanentemente.
     - Caso contrário: tickets recebem soft delete.
+
+---
+
+## CRUD Tickets
+
+### List Tickets
+
+#### Endpoint
+
+```http
+GET /api/projects/{id}/tickets
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Lista os tickets de um projeto específico de acordo com o perfil do usuário autenticado.
+
+##### Regras de acesso
+
+- **user**
+    - Retorna apenas os tickets que ele criou dentro do projeto que pertence.
+    - Se tentar acessar um projeto que não pertence, retorna **403 Acesso negado**.
+
+- **support**
+    - Retorna todos os tickets do projeto.
+
+#### Paginação
+
+A listagem é paginada com 10 registros por página.
+
+Metadados retornados:
+
+- total
+- per_page
+- current_page
+- last_page
+- from
+- to
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Tickets listados com sucesso.",
+    "data": {
+        "tickets": [
+            {
+                "id": 1,
+                "user_id": 1,
+                "project_id": 1,
+                "title": "Sed facere animi ab.",
+                "description": "Qui assumenda at officiis ad...",
+                "status": "in_progress",
+                "last_internal_at": null,
+                "closed_at": null,
+                "created_at": "2026-03-03 12:00:53",
+                "updated_at": "2026-03-03 12:00:53",
+                "user": {
+                    "id": 1,
+                    "name": "Sr. Ronaldo Camacho Filho",
+                    "email": "diana.mendes@example.org",
+                    "role": "user",
+                    "project_id": 1
+                }
+            }
+        ],
+        "project": {
+            "id": 1,
+            "name": "Marin e Bittencourt",
+            "description": null,
+            "created_at": "2026-03-03 12:00:53"
+        }
+    },
+    "meta": {
+        "pagination": {
+            "total": 10,
+            "per_page": 10,
+            "current_page": 1,
+            "last_page": 1,
+            "from": 1,
+            "to": 10
+        }
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Recurso não encontrado |
+
+---
+
+### Show Ticket
+
+#### Endpoint
+
+```http
+GET /api/tickets/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Retorna os detalhes completos de um ticket específico, incluindo:
+
+- Dados do ticket
+- Usuário que criou o ticket
+- Mensagens relacionadas ao ticket
+- Usuário de cada mensagem
+- Anexos das mensagens
+
+#### Regras de acesso
+
+- **user**
+    - Pode visualizar apenas tickets que ele criou.
+    - O ticket deve pertencer ao mesmo projeto do usuário.
+    - Caso tente acessar um ticket fora dessas condições, retorna **403 Acesso negado**.
+
+- **support**
+    - Pode visualizar qualquer ticket.
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket recuperado com sucesso.",
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Sed facere animi ab.",
+        "description": "Qui assumenda at officiis ad nostrum exercitationem iure a.",
+        "status": "in_progress",
+        "last_internal_at": null,
+        "closed_at": null,
+        "created_at": "2026-03-03 12:00:53",
+        "updated_at": "2026-03-03 12:00:53",
+        "user": {
+            "id": 1,
+            "name": "Sr. Ronaldo Camacho Filho",
+            "email": "diana.mendes@example.org",
+            "role": "user",
+            "project_id": 1
+        },
+        "messages": [
+            {
+                "id": 1,
+                "ticket_id": 1,
+                "user_id": 1,
+                "message": "Primeira mensagem do ticket.",
+                "created_at": "2026-03-03 12:10:00",
+                "user": {
+                    "id": 1,
+                    "name": "Sr. Ronaldo Camacho Filho",
+                    "email": "diana.mendes@example.org",
+                    "role": "user",
+                    "project_id": 1
+                },
+                "attachments": [
+                    {
+                        "id": 1,
+                        "ticket_message_id": 1,
+                        "file_name": "erro.png",
+                        "file_path": "attachments/erro.png",
+                        "file_size": 204800,
+                        "mime_type": "image/png",
+                        "created_at": "2026-03-03 12:10:30"
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Recurso não encontrado |
+
+### Create Ticket
+
+#### Endpoint
+
+```http
+POST /api/projects/{project}/tickets
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Cria um novo ticket vinculado a um projeto específico.
+
+O projeto é definido pelo parâmetro da rota `{project}`.
+
+O usuário autenticado será automaticamente definido como o criador do ticket.
+
+#### Regras de acesso
+
+- **user**
+    - Pode criar ticket apenas no projeto ao qual pertence.
+    - Se tentar criar ticket em outro projeto, retorna **403 Acesso negado**.
+
+- **support**
+    - Pode criar ticket em qualquer projeto.
+
+#### Body da requisição
+
+```json
+{
+    "title": "Erro ao acessar sistema",
+    "description": "Não consigo realizar login após atualização."
+}
+```
+
+#### Campos
+
+| Campo       | Tipo   | Obrigatório | Descrição                              |
+| ----------- | ------ | ----------- | -------------------------------------- |
+| title       | string | Sim         | Título do ticket (máx. 255 caracteres) |
+| description | string | Sim         | Descrição detalhada do problema        |
+
+> ⚠️ `project_id` e `user_id` não devem ser enviados no body, pois:
+>
+> - O projeto é definido pela rota.
+> - O usuário é obtido a partir do token autenticado.
+
+#### Exemplo de resposta (201 Created)
+
+```json
+{
+    "success": true,
+    "message": "Ticket criado com sucesso.",
+    "data": {
+        "id": 15,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Erro ao acessar sistema",
+        "description": "Não consigo realizar login após atualização.",
+        "status": "pending",
+        "last_interaction_at": "2026-03-04 14:10:00",
+        "closed_at": null,
+        "created_at": "2026-03-04 14:10:00",
+        "updated_at": "2026-03-04 14:10:00"
+    }
+}
+```
+
+> O endpoint de criação retorna apenas o recurso recém-criado.
+> Para obter o ticket completo com relacionamentos, deve-se utilizar o endpoint GET /api/tickets/{id}.
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Projeto não encontrado |
+| 422    | Erro de validação      |
+
+## Decisões técnicas
+
+- O `project_id` é obtido via rota REST aninhada.
+- O `user_id` é definido automaticamente a partir do usuário autenticado.
+
+### Update Ticket
+
+#### Endpoint
+
+```http
+PUT /api/tickets/{ticket}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Atualiza os dados de um ticket existente.
+
+Apenas os campos enviados no body serão atualizados.
+
+Sempre que um ticket é atualizado, o campo `last_interaction_at` é automaticamente atualizado para a data/hora atual.
+
+Caso o status seja definido como `closed`, o campo `closed_at` será automaticamente preenchido.
+
+#### Regras de acesso
+
+- **user**
+    - Pode atualizar apenas tickets:
+        - do mesmo projeto ao qual pertence
+        - criados por ele mesmo
+
+    - Só pode atualizar tickets com:
+        - `status = pending`
+        - `closed_at = null`
+
+    - **Não pode alterar o status do ticket**.
+
+- **support**
+    - Pode atualizar qualquer ticket.
+    - Pode alterar o status do ticket, apenas se `closed_at = null`.
+
+#### Body da requisição
+
+```json
+{
+    "title": "Erro ao acessar sistema",
+    "description": "Após atualização continuo sem acesso",
+    "status": "in_progress"
+}
+```
+
+#### Campos
+
+| Campo       | Tipo   | Obrigatório | Descrição                |
+| ----------- | ------ | ----------- | ------------------------ |
+| title       | string | Não         | Novo título do ticket    |
+| description | string | Não         | Nova descrição do ticket |
+
+#### Status possíveis
+
+| Status      | Descrição                     |
+| ----------- | ----------------------------- |
+| pending     | Ticket aguardando atendimento |
+| in_progress | Ticket em atendimento         |
+| answered    | Ticket respondido             |
+| closed      | Ticket finalizado             |
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket atualizado com sucesso.",
+    "data": {
+        "id": 15,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Erro ao acessar sistema",
+        "description": "Após atualização continuo sem acesso",
+        "status": "pending",
+        "last_interaction_at": "2026-03-04 14:30:00",
+        "closed_at": null,
+        "created_at": "2026-03-04 14:10:00",
+        "updated_at": "2026-03-04 14:30:00"
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição                                                |
+| ------ | -------------------------------------------------------- |
+| 401    | Não autenticado                                          |
+| 403    | Usuário não possui permissão para atualizar o ticket     |
+| 404    | Ticket não encontrado                                    |
+| 422    | Ticket não pode ser alterado devido às regras de negócio |
+
+### Delete Ticket
+
+#### Endpoint
+
+```http
+DELETE /api/tickets/{ticket}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Remove um ticket existente do sistema.
+
+A exclusão do ticket também afeta todas as **mensagens vinculadas a ele**.
+
+- Se o ticket for removido via **soft delete**, suas mensagens também serão soft deleted.
+- Caso seja executado um **force delete**, as mensagens também serão removidas permanentemente.
+
+Essa lógica é executada automaticamente através de um **evento do model (`deleting`)**.
+
+#### Regras de acesso
+
+- **support**
+    - Pode deletar qualquer ticket.
+
+- **user**
+    - Não possui permissão para deletar tickets.
+
+Se um usuário com role `user` tentar deletar um ticket, será retornado **403 Acesso negado**.
+
+#### Parâmetros da rota
+
+| Parâmetro | Tipo    | Descrição                      |
+| --------- | ------- | ------------------------------ |
+| ticket    | integer | ID do ticket que será deletado |
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket deletado com sucesso.",
+    "data": null
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição             |
+| ------ | --------------------- |
+| 401    | Não autenticado       |
+| 403    | Acesso negado         |
+| 404    | Ticket não encontrado |
+
+---

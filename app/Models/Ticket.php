@@ -46,4 +46,25 @@ class Ticket extends Model
     {
         return $this->hasMany(TicketMessage::class);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('closed_at');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->whereNotNull('closed_at');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function (Ticket $ticket) {
+            if ($ticket->isForceDeleting()) {
+                $ticket->messages()->forceDelete();
+            } else {
+                $ticket->messages()->delete();
+            }
+        });
+    }
 }
