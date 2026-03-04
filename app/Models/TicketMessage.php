@@ -43,6 +43,17 @@ class TicketMessage extends Model
         return $this->hasMany(TicketAttachment::class);
     }
 
+    protected static function booted()
+    {
+        static::deleting(function (TicketMessage $message) {
+            if ($message->isForceDeleting()) {
+                $message->attachments()->forceDelete();
+            } else {
+                $message->attachments()->delete();
+            }
+        });
+    }
+
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');
