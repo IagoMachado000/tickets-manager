@@ -1013,7 +1013,7 @@ O usuário autenticado será automaticamente definido como o criador do ticket.
 | title       | string | Sim         | Título do ticket (máx. 255 caracteres) |
 | description | string | Sim         | Descrição detalhada do problema        |
 
-> ⚠️ `project_id` e `user_id` não devem ser enviados no body, pois:
+> `project_id` e `user_id` não devem ser enviados no body, pois:
 >
 > - O projeto é definido pela rota.
 > - O usuário é obtido a partir do token autenticado.
@@ -1051,7 +1051,7 @@ O usuário autenticado será automaticamente definido como o criador do ticket.
 | 404    | Projeto não encontrado |
 | 422    | Erro de validação      |
 
-## Decisões técnicas
+#### Decisões técnicas
 
 - O `project_id` é obtido via rota REST aninhada.
 - O `user_id` é definido automaticamente a partir do usuário autenticado.
@@ -1221,3 +1221,144 @@ Se um usuário com role `user` tentar deletar um ticket, será retornado **403 A
 | 404    | Ticket não encontrado |
 
 ---
+
+## Mensagens de Ticket
+
+### Visão Geral
+
+Após a criação de um **ticket**, usuários e membros do **suporte** podem trocar mensagens dentro dele, permitindo a comunicação para resolução da demanda.
+
+Cada mensagem pode conter **até 3 anexos**.
+
+Regras de acesso:
+
+- Usuários com `role = user` só podem enviar mensagens em **seus próprios tickets**.
+- Usuários com `role = support` podem responder **qualquer ticket**.
+- Ao enviar uma nova mensagem:
+    - `last_interaction_at` do ticket é atualizado.
+    - O `status` do ticket muda automaticamente:
+        - `pending` quando a mensagem é enviada pelo usuário.
+        - `answered` quando a mensagem é enviada pelo suporte.
+
+### Enviar mensagem em um ticket
+
+#### Endpoint
+
+```
+POST /api/v1/tickets/{ticket}/messages
+```
+
+#### Autenticação
+
+Requer **Bearer Token (Laravel Sanctum)**.
+
+```
+Authorization: Bearer {token}
+```
+
+#### Parâmetros
+
+| Campo         | Tipo   | Obrigatório | Descrição             |
+| ------------- | ------ | ----------- | --------------------- |
+| message       | string | Sim         | Conteúdo da mensagem  |
+| attachments[] | file   | Não         | Até 3 arquivos anexos |
+
+#### Tipos de arquivos permitidos
+
+```
+jpg
+jpeg
+png
+pdf
+doc
+docx
+```
+
+#### Tamanho máximo
+
+```
+2MB por arquivo
+```
+
+##### Exemplo de Request
+
+Exemplo usando **multipart/form-data**:
+
+```
+POST /api/v1/tickets/36/messages
+```
+
+Body:
+
+```
+message: Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+
+attachments[]: arquivo1.png
+attachments[]: documento.pdf
+```
+
+#### Exemplo de Response
+
+```json
+{
+    "success": true,
+    "message": "Mensagem enviada com sucesso.",
+    "data": {
+        "id": 105,
+        "ticket_id": 36,
+        "user_id": 5,
+        "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+        "created_at": "2026-03-04 21:07:05",
+        "updated_at": "2026-03-04 21:07:05",
+        "user": {
+            "id": 5,
+            "name": "Karine Lourenço Rangel",
+            "email": "pablo.arruda@example.com",
+            "role": "support",
+            "project_id": 1
+        },
+        "attachments": [
+            {
+                "id": 75,
+                "ticket_message_id": 105,
+                "file_name": "9ea71b68-fd32-465b-b90a-68fa39285d1e.png",
+                "file_path": "attachments/36/9ea71b68-fd32-465b-b90a-68fa39285d1e.png",
+                "file_size": 83566,
+                "mime_type": "image/png",
+                "created_at": "2026-03-04 21:07:07",
+                "updated_at": "2026-03-04 21:07:07"
+            },
+            {
+                "id": 76,
+                "ticket_message_id": 105,
+                "file_name": "e3f4c89b-01da-4ad1-bda1-32af9533e558.pdf",
+                "file_path": "attachments/36/e3f4c89b-01da-4ad1-bda1-32af9533e558.pdf",
+                "file_size": 50408,
+                "mime_type": "application/pdf",
+                "created_at": "2026-03-04 21:07:07",
+                "updated_at": "2026-03-04 21:07:07"
+            }
+        ]
+    }
+}
+```
+
+#### Estrutura de armazenamento dos anexos
+
+Os arquivos enviados são armazenados no **disk público do Laravel** (`storage/app/public`) na seguinte estrutura:
+
+```
+attachments/{ticket_id}/{uuid}.{extensão}
+```
+
+Exemplo:
+
+```
+attachments/36/9ea71b68-fd32-465b-b90a-68fa39285d1e.png
+```
+
+Para acesso público aos arquivos, é necessário executar:
+
+```bash
+php artisan storage:link
+```
