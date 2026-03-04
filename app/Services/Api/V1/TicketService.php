@@ -28,7 +28,7 @@ class TicketService
         return $query->paginate(10);
     }
 
-    public function create(array $data, Project $project, User $user)
+    public function create(array $data, Project $project, User $user): Ticket
     {
         if ($user->role === 'user' && $user->project_id !== $project->id) {
             abort(403, 'Acesso negado.');
@@ -45,7 +45,7 @@ class TicketService
         });
     }
 
-    public function show(Ticket $ticket, User $user)
+    public function show(Ticket $ticket, User $user): Ticket
     {
         if ($user->role === 'user' && $user->project_id !== $ticket->project_id) {
             abort(403, 'Acesso negado.');
@@ -62,5 +62,45 @@ class TicketService
         ]);
 
         return $ticket;
+    }
+
+    public function update(Ticket $ticket, array $data, User $user): Ticket
+    {
+        if ($user->role === 'user' && $user->project_id !== $ticket->project_id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        if ($user->role === 'user' && $ticket->user_id !== $user->id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        if ($user->role === 'user' && ($ticket->status !== 'pending' || $ticket->closed_at !== null)) {
+            abort(422, 'Ticket não pode ser alterado.');
+        }
+
+        if ($user->role === 'user' && isset($data['status'])) {
+            abort(403, 'Usuário não pode alterar status do ticket.');
+        }
+
+        if ($ticket->closed_at !== null && isset($data['status'])) {
+            abort(422, 'Ticket já fechado não pode ter status alterado.');
+        }
+
+        return DB::transaction(function () use ($ticket, $data) {
+            $updateData = [
+                'title' => $data['title'] ?? $ticket->title,
+                'description' => $data['description'] ?? $ticket->description,
+                'status' => $data['status'] ?? $ticket->status,
+                'last_interaction_at' => now(),
+            ];
+
+            if (($data['status'] ?? null) === 'closed') {
+                $updateData['closed_at'] = now();
+            }
+
+            $ticket->update($updateData);
+
+            return $ticket;
+        });
     }
 }

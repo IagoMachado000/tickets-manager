@@ -1055,3 +1055,104 @@ O usuário autenticado será automaticamente definido como o criador do ticket.
 
 - O `project_id` é obtido via rota REST aninhada.
 - O `user_id` é definido automaticamente a partir do usuário autenticado.
+
+### Update Ticket
+
+#### Endpoint
+
+```http
+PUT /api/tickets/{ticket}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Atualiza os dados de um ticket existente.
+
+Apenas os campos enviados no body serão atualizados.
+
+Sempre que um ticket é atualizado, o campo `last_interaction_at` é automaticamente atualizado para a data/hora atual.
+
+Caso o status seja definido como `closed`, o campo `closed_at` será automaticamente preenchido.
+
+#### Regras de acesso
+
+- **user**
+    - Pode atualizar apenas tickets:
+        - do mesmo projeto ao qual pertence
+        - criados por ele mesmo
+
+    - Só pode atualizar tickets com:
+        - `status = pending`
+        - `closed_at = null`
+
+    - **Não pode alterar o status do ticket**.
+
+- **support**
+    - Pode atualizar qualquer ticket.
+    - Pode alterar o status do ticket, apenas se `closed_at = null`.
+
+#### Body da requisição
+
+```json
+{
+    "title": "Erro ao acessar sistema",
+    "description": "Após atualização continuo sem acesso",
+    "status": "in_progress"
+}
+```
+
+#### Campos
+
+| Campo       | Tipo   | Obrigatório | Descrição                |
+| ----------- | ------ | ----------- | ------------------------ |
+| title       | string | Não         | Novo título do ticket    |
+| description | string | Não         | Nova descrição do ticket |
+
+#### Status possíveis
+
+| Status      | Descrição                     |
+| ----------- | ----------------------------- |
+| pending     | Ticket aguardando atendimento |
+| in_progress | Ticket em atendimento         |
+| answered    | Ticket respondido             |
+| closed      | Ticket finalizado             |
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket atualizado com sucesso.",
+    "data": {
+        "id": 15,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Erro ao acessar sistema",
+        "description": "Após atualização continuo sem acesso",
+        "status": "pending",
+        "last_interaction_at": "2026-03-04 14:30:00",
+        "closed_at": null,
+        "created_at": "2026-03-04 14:10:00",
+        "updated_at": "2026-03-04 14:30:00"
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição                                                |
+| ------ | -------------------------------------------------------- |
+| 401    | Não autenticado                                          |
+| 403    | Usuário não possui permissão para atualizar o ticket     |
+| 404    | Ticket não encontrado                                    |
+| 422    | Ticket não pode ser alterado devido às regras de negócio |

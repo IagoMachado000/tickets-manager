@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\StoreTicketRequest;
+use App\Http\Requests\Api\V1\UpdateTicketRequest;
 use App\Http\Resources\Api\V1\ProjectResource;
 use App\Http\Resources\Api\V1\TicketResource;
 use App\Models\Project;
@@ -76,9 +77,15 @@ class TicketController extends BaseApiController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Ticket $ticket)
+    public function update(Ticket $ticket, UpdateTicketRequest $request)
     {
-        //
+        $ticket = $this->ticketService->update($ticket, $request->validated(), $request->user());
+
+        return $this->success(
+            new TicketResource($ticket),
+            'Ticket atualizado com sucesso.',
+            200
+        );
     }
 
     /**
