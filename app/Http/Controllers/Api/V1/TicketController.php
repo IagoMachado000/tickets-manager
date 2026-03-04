@@ -91,8 +91,14 @@ class TicketController extends BaseApiController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ticket $ticket)
+    public function destroy(Ticket $ticket, Request $request)
     {
-        //
+        $this->ticketService->delete($ticket, $request->user());
+
+        return $this->success(
+            null,
+            'Ticket deletado com sucesso.',
+            200
+        );
     }
 }

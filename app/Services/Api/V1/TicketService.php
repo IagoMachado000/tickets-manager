@@ -103,4 +103,15 @@ class TicketService
             return $ticket;
         });
     }
+
+    public function delete(Ticket $ticket, User $user): void
+    {
+        if ($user->role !== 'support') {
+            abort(403, 'Acesso negado.');
+        }
+
+        DB::transaction(function () use ($ticket) {
+            $ticket->delete();
+        });
+    }
 }

@@ -56,4 +56,15 @@ class Ticket extends Model
     {
         return $query->whereNotNull('closed_at');
     }
+
+    protected static function booted()
+    {
+        static::deleting(function (Ticket $ticket) {
+            if ($ticket->isForceDeleting()) {
+                $ticket->messages()->forceDelete();
+            } else {
+                $ticket->messages()->delete();
+            }
+        });
+    }
 }

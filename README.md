@@ -1156,3 +1156,68 @@ Caso o status seja definido como `closed`, o campo `closed_at` será automaticam
 | 403    | Usuário não possui permissão para atualizar o ticket     |
 | 404    | Ticket não encontrado                                    |
 | 422    | Ticket não pode ser alterado devido às regras de negócio |
+
+### Delete Ticket
+
+#### Endpoint
+
+```http
+DELETE /api/tickets/{ticket}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Remove um ticket existente do sistema.
+
+A exclusão do ticket também afeta todas as **mensagens vinculadas a ele**.
+
+- Se o ticket for removido via **soft delete**, suas mensagens também serão soft deleted.
+- Caso seja executado um **force delete**, as mensagens também serão removidas permanentemente.
+
+Essa lógica é executada automaticamente através de um **evento do model (`deleting`)**.
+
+#### Regras de acesso
+
+- **support**
+    - Pode deletar qualquer ticket.
+
+- **user**
+    - Não possui permissão para deletar tickets.
+
+Se um usuário com role `user` tentar deletar um ticket, será retornado **403 Acesso negado**.
+
+#### Parâmetros da rota
+
+| Parâmetro | Tipo    | Descrição                      |
+| --------- | ------- | ------------------------------ |
+| ticket    | integer | ID do ticket que será deletado |
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket deletado com sucesso.",
+    "data": null
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição             |
+| ------ | --------------------- |
+| 401    | Não autenticado       |
+| 403    | Acesso negado         |
+| 404    | Ticket não encontrado |
+
+---
