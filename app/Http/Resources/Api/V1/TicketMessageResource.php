@@ -7,7 +7,7 @@ namespace App\Http\Resources\Api\V1;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TicketResource extends JsonResource
+class TicketMessageResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,17 +18,12 @@ class TicketResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'ticket_id' => $this->ticket_id,
             'user_id' => $this->user_id,
-            'project_id' => $this->project_id,
-            'title' => $this->title,
-            'description' => $this->description,
-            'status' => $this->status,
-            'last_internal_at' => $this->last_internal_at?->toDateTimeString(),
-            'closed_at' => $this->closed_at?->toDateTimeString(),
+            'message' => $this->message,
             'created_at' => $this->created_at?->toDateTimeString(),
-            'updated_at' => $this->updated_at?->toDateTimeString(),
             'user' => new UserResource($this->whenLoaded('user')),
-            'messages' => TicketMessageResource::collection($this->whenLoaded('messages')),
+            'attachments' => TicketAttachmentResource::collection($this->whenLoaded('attachments')),
         ];
     }
 }

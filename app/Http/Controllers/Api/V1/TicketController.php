@@ -55,9 +55,15 @@ class TicketController extends BaseApiController
     /**
      * Display the specified resource.
      */
-    public function show(Ticket $ticket)
+    public function show(Ticket $ticket, Request $request)
     {
-        //
+        $ticket = $this->ticketService->show($ticket, $request->user());
+
+        return $this->success(
+            new TicketResource($ticket),
+            'Ticket recuperado com sucesso.',
+            200
+        );
     }
 
     /**

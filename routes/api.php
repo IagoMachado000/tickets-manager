@@ -23,5 +23,7 @@ Route::prefix('v1')->group(function () {
             ->group(function () {
                 Route::get('/{project}/tickets', 'index')->name('api.v1.projects.tickets.index');
             });
+
+        Route::apiResource('tickets', TicketController::class)->except(['index', 'store']);
     });
 });

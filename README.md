@@ -312,7 +312,7 @@ public function destroy(Project $project)
 
 ## CRUD Projects
 
-### List
+### List Projects
 
 #### Endpoint
 
@@ -465,8 +465,6 @@ Authorization: Bearer {token}
 | 401    | Usuário não autenticado                      |
 | 403    | Usuário sem permissão para acessar o projeto |
 | 404    | Projeto não encontrado                       |
-
-#### Implementação técnica
 
 ### Create Project
 
@@ -849,6 +847,109 @@ Metadados retornados:
             "from": 1,
             "to": 10
         }
+    }
+}
+```
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Recurso não encontrado |
+
+---
+
+### Show Ticket
+
+#### Endpoint
+
+```http
+GET /api/tickets/{id}
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Retorna os detalhes completos de um ticket específico, incluindo:
+
+- Dados do ticket
+- Usuário que criou o ticket
+- Mensagens relacionadas ao ticket
+- Usuário de cada mensagem
+- Anexos das mensagens
+
+#### Regras de acesso
+
+- **user**
+    - Pode visualizar apenas tickets que ele criou.
+    - O ticket deve pertencer ao mesmo projeto do usuário.
+    - Caso tente acessar um ticket fora dessas condições, retorna **403 Acesso negado**.
+
+- **support**
+    - Pode visualizar qualquer ticket.
+
+#### Exemplo de resposta (200 OK)
+
+```json
+{
+    "success": true,
+    "message": "Ticket recuperado com sucesso.",
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Sed facere animi ab.",
+        "description": "Qui assumenda at officiis ad nostrum exercitationem iure a.",
+        "status": "in_progress",
+        "last_internal_at": null,
+        "closed_at": null,
+        "created_at": "2026-03-03 12:00:53",
+        "updated_at": "2026-03-03 12:00:53",
+        "user": {
+            "id": 1,
+            "name": "Sr. Ronaldo Camacho Filho",
+            "email": "diana.mendes@example.org",
+            "role": "user",
+            "project_id": 1
+        },
+        "messages": [
+            {
+                "id": 1,
+                "ticket_id": 1,
+                "user_id": 1,
+                "message": "Primeira mensagem do ticket.",
+                "created_at": "2026-03-03 12:10:00",
+                "user": {
+                    "id": 1,
+                    "name": "Sr. Ronaldo Camacho Filho",
+                    "email": "diana.mendes@example.org",
+                    "role": "user",
+                    "project_id": 1
+                },
+                "attachments": [
+                    {
+                        "id": 1,
+                        "ticket_message_id": 1,
+                        "file_name": "erro.png",
+                        "file_path": "attachments/erro.png",
+                        "file_size": 204800,
+                        "mime_type": "image/png",
+                        "created_at": "2026-03-03 12:10:30"
+                    }
+                ]
+            }
+        ]
     }
 }
 ```

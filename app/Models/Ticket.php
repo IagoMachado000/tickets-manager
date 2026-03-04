@@ -46,4 +46,14 @@ class Ticket extends Model
     {
         return $this->hasMany(TicketMessage::class);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('closed_at');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->whereNotNull('closed_at');
+    }
 }
