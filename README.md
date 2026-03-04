@@ -2,7 +2,163 @@
 
 **Descrição**
 
-Construção de uma API REST para um sistema de Gestão de Demandas (tickets)
+Este projeto foi desenvolvido como parte de um teste técnico para vaga de Desenvolvedor Web (PHP/Laravel), com foco na construção de uma API REST organizada, documentada e seguindo boas práticas de arquitetura.
+
+---
+
+## Requisitos
+
+- PHP 8.2+
+- Composer
+- MySQL 8+
+- Laravel 12
+
+---
+
+## Como rodar o projeto
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/IagoMachado000/tickets-manager.git
+
+cd tickets-manager
+```
+
+### 2. Instalar dependências
+
+```bash
+composer install
+```
+
+### 3. Copiar arquivos de ambiente
+
+```bash
+cp .env.example .env
+```
+
+### 4. Configurar banco de dados
+
+Editar o arquivo `.env`
+
+```php
+DB_CONNECTION=mysql
+DB_DATABASE=tickets_manager
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 5. Configurar localização da aplicação
+
+Editar o arquivo `.env`
+
+```php
+APP_LOCALE=pt_BR
+```
+
+### 6. Gerar chave da aplicação
+
+```bash
+php artisan key:generate
+```
+
+### 7. Rodar migrations
+
+```bash
+php artisan migrate
+```
+
+### 8. Popular o banco de dados
+
+```bash
+# Rodar os seeders
+php artisan db:seed
+
+# Limpar o banco e rodar os seeders
+# Esse comando vai apagar todos os dados e criar novos
+php artisan migrate:fresh --seed
+```
+
+### 9. Criar link de storage
+
+```bash
+php artisan storage:link
+```
+
+### 10. Rodar o servidor
+
+```bash
+php artisan serve
+```
+
+API disponível em:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Banco de Dados
+
+O projeto utiliza **MySQL**.
+
+Todas as estruturas de banco são criadas através de **migrations do Laravel**.
+
+Além disso, o repositório inclui um **Dicionário de Dados** contendo a documentação completa das tabelas e relacionamentos.
+
+Arquivo: `docs/dicionario-de-dados.md`
+
+O dicionário descreve:
+
+- tabelas
+- campos
+- tipos de dados
+- chaves estrangeiras
+- relacionamentos
+- finalidade de cada campo
+
+---
+
+## Arquitetura do Projeto
+
+A aplicação segue uma arquitetura baseada em separação de responsabilidades:
+
+- **Controllers**: recebem a requisição HTTP
+- **Form Requests**: responsáveis por validação
+- **Services**: concentram regras de negócio
+- **Models**: representam entidades e relacionamentos
+- **Traits**: reutilização de lógica comum (ex: ApiResponseTrait)
+
+Essa organização facilita manutenção e escalabilidade da aplicação.
+
+---
+
+## Collection do Insomnia
+
+Para facilitar os testes da API, o repositório inclui uma **collection do Insomnia** com todos os endpoints utilizados durante o desenvolvimento.
+
+Arquivo disponível em: `docs/insomnia-collection.yaml`
+
+A collection contém:
+
+- autenticação (register, login, logout)
+- CRUD de projetos
+- CRUD de tickets
+- criação de mensagens com anexos
+- exemplos de requisições e payloads
+
+### Variáveis de ambiente
+
+A collection utiliza as seguintes variáveis:
+
+```text
+base_url_v1=http://127.0.0.1:8000/api/v1
+
+token=SEU_TOKEN_AQUI
+```
+
+> Após realizar login na API, basta substituir o valor da variável `token` pelo token retornado pela rota de autenticação.
 
 ---
 
@@ -58,7 +214,7 @@ Após a instalação, as traduções foram publicadas e o locale da aplicação 
 - Alteração feita no arquivo `.env` seguindo as instruções do pacote de acordo com a versão do laravel
 
 ```env
-APP_LOCALE=pt_BR,
+APP_LOCALE=pt_BR
 ```
 
 ### Justificativa Técnica
@@ -681,7 +837,7 @@ Content-Type: application/json
 }
 ```
 
-#### Implementação técnica
+#### Implementação Técnica
 
 - Regra de unicidade com `Rule::unique()->ignore()` para evitar conflito no próprio registro.
 
@@ -749,7 +905,7 @@ Authorization: Bearer {token}
 | 403    | Usuário sem permissão para deletar projetos |
 | 404    | Projeto não encontrado                      |
 
-#### Implementação técnica
+#### Implementação Técnica
 
 - Eventos de deleção (`deleting`) no model `Project` cuidam da remoção de tickets associados:
     - Se `forceDelete`: tickets são removidos permanentemente.
@@ -1051,7 +1207,7 @@ O usuário autenticado será automaticamente definido como o criador do ticket.
 | 404    | Projeto não encontrado |
 | 422    | Erro de validação      |
 
-#### Decisões técnicas
+#### Decisões Técnicas
 
 - O `project_id` é obtido via rota REST aninhada.
 - O `user_id` é definido automaticamente a partir do usuário autenticado.
@@ -1362,3 +1518,90 @@ Para acesso público aos arquivos, é necessário executar:
 ```bash
 php artisan storage:link
 ```
+
+---
+
+## Decisões Técnicas
+
+### Estratégia de exclusão de projetos
+
+Foi adotada a estratégia de **Soft Delete** para projetos e tickets.
+
+Motivos da escolha:
+
+- Permitir recuperação de dados em caso de exclusão acidental
+- Preservar histórico de tickets e mensagens
+- Facilitar auditoria de ações no sistema
+- Evitar perda definitiva de dados relacionados
+
+Com isso:
+
+- Projeto -> Ticket
+    - Ao excluir um **projeto**, os **tickets associados também recebem soft delete**.
+    - Caso seja executado um **forceDelete**, os tickets relacionados são removidos permanentemente.
+
+- Ticket -> Mensagem
+    - Ao excluir um **ticket**, as **mensagens associadas também recebem soft delete**.
+    - Caso seja executado um **forceDelete**, as mensagens relacionadas são removidos permanentemente.
+
+- Mensagem -> Anexos
+    - Ao excluir uma **mensagem**, os **anexos associados também recebem soft delete**.
+    - Caso seja executado um **forceDelete**, os anexos relacionados são removidos permanentemente.
+
+Essa lógica é implementada através do evento `deleting` nos models:
+
+- Project
+- Ticket
+- TicketMessage
+
+---
+
+## Funcionalidades planejadas (não implementadas)
+
+Devido ao tempo disponível para realização do teste técnico, algumas funcionalidades planejadas não foram implementadas, mas foram consideradas na arquitetura do projeto.
+
+### Notificações por e-mail
+
+A ideia seria implementar notificações utilizando o sistema de **Notifications do Laravel**, enviando e-mails para o usuário em eventos como:
+
+- criação de ticket
+- resposta do suporte
+- fechamento do ticket
+
+### Fechamento automático de tickets inativos
+
+Seria implementado um **Job agendado (Scheduler)** responsável por:
+
+- identificar tickets com **7 dias ou mais sem interação**
+- alterar o status para `closed`
+- registrar a data em `closed_at`
+
+Esse job seria executado via **Laravel Scheduler**.
+
+### Policies
+
+O controle de autorização atualmente está implementado nas **camadas de Service e validações de regra de negócio**.
+
+Como melhoria arquitetural, seria possível mover essas regras para **Policies do Laravel**, centralizando as permissões de acesso às entidades:
+
+- ProjectPolicy
+- TicketPolicy
+- TicketMessagePolicy
+
+### Front-end
+
+O escopo do teste permite a implementação opcional de um front-end para consumo da API.
+
+Devido ao tempo disponível, foi priorizada a implementação do **backend e das regras de negócio da API**, garantindo:
+
+- autenticação
+- controle de acesso
+- validações
+- documentação
+- organização da arquitetura
+
+A API foi construída de forma totalmente **stateless**, permitindo fácil integração futura com:
+
+- SPA (React / Vue)
+- aplicações mobile
+- ou um front-end em Blade.

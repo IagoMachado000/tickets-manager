@@ -129,6 +129,8 @@ Armazena todas as interações do ticket (histórico completo).
 | user_id    | bigint (FK) | ✔           | Autor                |
 | message    | text        | ✔           | Conteúdo da mensagem |
 | created_at | timestamp   | ✔           |                      |
+| updated_at | timestamp   | ✔           |                      |
+| deleted_at | timestamp   | ✖           | Soft delete          |
 
 ### Relacionamentos
 
@@ -162,6 +164,8 @@ Armazena anexos das mensagens do ticket (máximo 3 por mensagem).
 | file_size         | bigint       | ✔           | Tamanho em bytes   |
 | mime_type         | varchar(100) | ✔           | Tipo MIME          |
 | created_at        | timestamp    | ✔           |                    |
+| updated_at        | timestamp    | ✔           |                    |
+| deleted_at        | timestamp    | ✖           | Soft delete        |
 
 ### Relacionamento
 

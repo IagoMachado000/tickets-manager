@@ -1,0 +1,569 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Tickets Manager
+meta:
+  id: wrk_5e33474ede054800b0ac480a705d3671
+  created: 1772476130757
+  modified: 1772476130757
+  description: ""
+collection:
+  - name: Auth
+    meta:
+      id: fld_08b8fc389bb741fcb5a1c376f206ba85
+      created: 1772549400939
+      modified: 1772549400939
+      sortKey: -1772549400939
+      description: ""
+    children:
+      - url: "{{ _.base_url_v1 }}/register"
+        name: "Register User "
+        meta:
+          id: req_322c2410bda9404f8e08befc28ebe6bf
+          created: 1772476195750
+          modified: 1772665577664
+          isPrivate: false
+          description: ""
+          sortKey: -1772549404975
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Usuário Teste",
+            	"email": "usuarioteste@email.com",
+            	"password": "password",
+            	"password_confirmation": "password",
+            	"role": "user",
+            	"project_id": "1"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/register"
+        name: Register Support
+        meta:
+          id: req_eff7ac74ff4c4182b0956e1e6f36bad2
+          created: 1772542685300
+          modified: 1772665572301
+          isPrivate: false
+          description: ""
+          sortKey: -1772549404875
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Suporte Teste",
+            	"email": "suporteteste@email.com",
+            	"password": "password",
+            	"password_confirmation": "password",
+            	"role": "support"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/login"
+        name: Login
+        meta:
+          id: req_322cbde01f7446349f47a34852ed2d96
+          created: 1772544020834
+          modified: 1772665555773
+          isPrivate: false
+          description: ""
+          sortKey: -1772549404675
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"email": "teste@example.org",
+            	"password": "password"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/logout"
+        name: Logout
+        meta:
+          id: req_f4926b6f0e3840d59c16eae35337b2ae
+          created: 1772547163941
+          modified: 1772549991754
+          isPrivate: false
+          description: ""
+          sortKey: -1772549404575
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Projects
+    meta:
+      id: fld_c145dc69d3fb4e05932a1a649fc5fb4a
+      created: 1772550865529
+      modified: 1772550865529
+      sortKey: -1772550865529
+      description: ""
+    children:
+      - url: "{{ _.base_url_v1 }}/projects"
+        name: Index
+        meta:
+          id: req_6d80a82feca0453fa10212a002949820
+          created: 1772550870584
+          modified: 1772558360037
+          isPrivate: false
+          description: ""
+          sortKey: -1772550870584
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects?q=teste"
+        name: Index Search
+        meta:
+          id: req_850e9cb06127425189d89f901420cc46
+          created: 1772558527904
+          modified: 1772665453949
+          isPrivate: false
+          description: ""
+          sortKey: -1772550137779.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects/1"
+        name: Show
+        meta:
+          id: req_e6a87e111dd74676b22226372deeb701
+          created: 1772559207751
+          modified: 1772560424295
+          isPrivate: false
+          description: ""
+          sortKey: -1772559207751
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects"
+        name: Store
+        meta:
+          id: req_17b2298a74184a03801d3090116b64cf
+          created: 1772561385060
+          modified: 1772563290514
+          isPrivate: false
+          description: ""
+          sortKey: -1772561385060
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Projeto Teste 3"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects/1"
+        name: Update
+        meta:
+          id: req_ed5dd8faa367447a9a5b890df2141fca
+          created: 1772563373339
+          modified: 1772665462847
+          isPrivate: false
+          description: ""
+          sortKey: -1772563373339
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Projeto teste 5"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects/1"
+        name: Delete
+        meta:
+          id: req_24603fda516a4761a3565094d2f937b7
+          created: 1772566140363
+          modified: 1772665466521
+          isPrivate: false
+          description: ""
+          sortKey: -1772566140363
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Tickets
+    meta:
+      id: fld_d888009868704326981a244b5a86e73a
+      created: 1772568166600
+      modified: 1772568166600
+      sortKey: -1772568166600
+      description: ""
+    children:
+      - url: "{{ _.base_url_v1 }}/projects/1/tickets"
+        name: Index
+        meta:
+          id: req_776f67f666b8410c968ef1cdd65cf1f1
+          created: 1772568174502
+          modified: 1772573248654
+          isPrivate: false
+          description: ""
+          sortKey: -1772568174502
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/tickets/1"
+        name: Show
+        meta:
+          id: req_2b8e2f6adf54489ba1b61791406ac533
+          created: 1772573661528
+          modified: 1772573776839
+          isPrivate: false
+          description: ""
+          sortKey: -1772573661528
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/projects/1/tickets"
+        name: Store
+        meta:
+          id: req_b9976e61f2534020b43d397347914018
+          created: 1772647813853
+          modified: 1772651701799
+          isPrivate: false
+          description: ""
+          sortKey: -1772647813853
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"title": "Outro ticket teste 2",
+            	"description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/tickets/1"
+        name: Update
+        meta:
+          id: req_499879635f394160beb75742f1c22eb1
+          created: 1772651611567
+          modified: 1772665473476
+          isPrivate: false
+          description: ""
+          sortKey: -1772610737690.5
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"titulo": "Alterando ticket in progress"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url_v1 }}/tickets/1"
+        name: Delete
+        meta:
+          id: req_42e0b26603b6440e8d41e553476862cd
+          created: 1772653179207
+          modified: 1772653671466
+          isPrivate: false
+          description: ""
+          sortKey: -1772653179207
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Messages
+    meta:
+      id: fld_cd814af551a945608fc9191492ae05cc
+      created: 1772656925955
+      modified: 1772656925955
+      sortKey: -1772656925955
+      description: ""
+    children:
+      - url: "{{ _.base_url_v1 }}/tickets/1/messages"
+        name: Store
+        meta:
+          id: req_6fbc239a3d1a4135abbf966f03a605a4
+          created: 1772656936873
+          modified: 1772665480461
+          isPrivate: false
+          description: ""
+          sortKey: -1772656936873
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: message
+              value:
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry.
+              description: ""
+              disabled: false
+            - name: attachments[]
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\iagom\Downloads\localhost_5173_.png
+              type: file
+            - name: attachments[]
+              value: ""
+              description: ""
+              disabled: false
+              fileName:
+                C:\Users\iagom\Downloads\Teste técnico — Desenvolvedor(a) Web
+                (PHP_Laravel + JS).pdf
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.3.1
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ _.token }}
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_0acf3ca074e1d5b0cf05cb7ff5d540f015193175
+    created: 1772476130768
+    modified: 1772476130768
+environments:
+  name: Base Environment
+  meta:
+    id: env_0acf3ca074e1d5b0cf05cb7ff5d540f015193175
+    created: 1772476130763
+    modified: 1772664423033
+    isPrivate: false
+  data:
+    base_url_v1: http://127.0.0.1:8000/api/v1
+    token: YOUR_TOKEN_HERE
