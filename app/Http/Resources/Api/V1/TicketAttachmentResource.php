@@ -23,7 +23,7 @@ class TicketAttachmentResource extends JsonResource
             'file_path' => $this->file_path,
             'file_size' => $this->file_size,
             'mime_type' => $this->mime_type,
-            'created_at' => $this->created_at?->toDateTimeString(),
+            'created_at' => $this->created_at,
         ];
     }
 }

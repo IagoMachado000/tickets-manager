@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,7 @@ class TicketAttachment extends Model
     protected function casts(): array
     {
         return [
+            'deleted_at' => 'datetime',
             'ticket_message_id' => 'integer',
             'file_size' => 'integer',
         ];
@@ -30,5 +32,10 @@ class TicketAttachment extends Model
     public function message(): BelongsTo
     {
         return $this->belongsTo(TicketMessage::class, 'ticket_message_id');
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }
