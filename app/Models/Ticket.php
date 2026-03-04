@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,7 @@ class Ticket extends Model
         return [
             'last_interaction_at' => 'datetime',
             'closed_at' => 'datetime',
+            'deleted_at' => 'datetime',
             'project_id' => 'integer',
             'user_id' => 'integer',
         ];
@@ -66,5 +68,10 @@ class Ticket extends Model
                 $ticket->messages()->delete();
             }
         });
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }

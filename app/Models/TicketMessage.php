@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class TicketMessage extends Model
     protected function casts(): array
     {
         return [
+            'deleted_at' => 'datetime',
             'ticket_id' => 'integer',
             'user_id' => 'integer',
         ];
@@ -39,5 +41,10 @@ class TicketMessage extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(TicketAttachment::class);
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }
