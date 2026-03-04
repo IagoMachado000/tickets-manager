@@ -961,3 +961,97 @@ Retorna os detalhes completos de um ticket específico, incluindo:
 | 401    | Não autenticado        |
 | 403    | Acesso negado          |
 | 404    | Recurso não encontrado |
+
+### Create Ticket
+
+#### Endpoint
+
+```http
+POST /api/projects/{project}/tickets
+```
+
+#### Autenticação
+
+Requer autenticação via **Bearer Token (Laravel Sanctum)**.
+
+Header:
+
+```http
+Authorization: Bearer {token}
+```
+
+#### Descrição
+
+Cria um novo ticket vinculado a um projeto específico.
+
+O projeto é definido pelo parâmetro da rota `{project}`.
+
+O usuário autenticado será automaticamente definido como o criador do ticket.
+
+#### Regras de acesso
+
+- **user**
+    - Pode criar ticket apenas no projeto ao qual pertence.
+    - Se tentar criar ticket em outro projeto, retorna **403 Acesso negado**.
+
+- **support**
+    - Pode criar ticket em qualquer projeto.
+
+#### Body da requisição
+
+```json
+{
+    "title": "Erro ao acessar sistema",
+    "description": "Não consigo realizar login após atualização."
+}
+```
+
+#### Campos
+
+| Campo       | Tipo   | Obrigatório | Descrição                              |
+| ----------- | ------ | ----------- | -------------------------------------- |
+| title       | string | Sim         | Título do ticket (máx. 255 caracteres) |
+| description | string | Sim         | Descrição detalhada do problema        |
+
+> ⚠️ `project_id` e `user_id` não devem ser enviados no body, pois:
+>
+> - O projeto é definido pela rota.
+> - O usuário é obtido a partir do token autenticado.
+
+#### Exemplo de resposta (201 Created)
+
+```json
+{
+    "success": true,
+    "message": "Ticket criado com sucesso.",
+    "data": {
+        "id": 15,
+        "user_id": 1,
+        "project_id": 1,
+        "title": "Erro ao acessar sistema",
+        "description": "Não consigo realizar login após atualização.",
+        "status": "pending",
+        "last_interaction_at": "2026-03-04 14:10:00",
+        "closed_at": null,
+        "created_at": "2026-03-04 14:10:00",
+        "updated_at": "2026-03-04 14:10:00"
+    }
+}
+```
+
+> O endpoint de criação retorna apenas o recurso recém-criado.
+> Para obter o ticket completo com relacionamentos, deve-se utilizar o endpoint GET /api/tickets/{id}.
+
+#### Possíveis erros
+
+| Código | Descrição              |
+| ------ | ---------------------- |
+| 401    | Não autenticado        |
+| 403    | Acesso negado          |
+| 404    | Projeto não encontrado |
+| 422    | Erro de validação      |
+
+## Decisões técnicas
+
+- O `project_id` é obtido via rota REST aninhada.
+- O `user_id` é definido automaticamente a partir do usuário autenticado.

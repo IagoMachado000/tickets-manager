@@ -23,7 +23,7 @@ class TicketResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
-            'last_internal_at' => $this->last_internal_at?->toDateTimeString(),
+            'last_interaction_at' => $this->last_interaction_at?->toDateTimeString(),
             'closed_at' => $this->closed_at?->toDateTimeString(),
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Requests\Api\V1\StoreTicketRequest;
 use App\Http\Resources\Api\V1\ProjectResource;
 use App\Http\Resources\Api\V1\TicketResource;
 use App\Models\Project;
@@ -47,9 +48,15 @@ class TicketController extends BaseApiController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTicketRequest $request, Project $project)
     {
-        //
+        $ticket = $this->ticketService->create($request->validated(), $project, $request->user());
+
+        return $this->success(
+            new TicketResource($ticket),
+            'Ticket criado com sucesso.',
+            201
+        );
     }
 
     /**
